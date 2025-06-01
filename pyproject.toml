@@ -68,6 +68,7 @@ replicate = "^1.0.7"
 azure = ["azure-cognitiveservices-speech"]
 gtts = ["gTTS"]
 openai = ["openai"]
+replicate = ["replicate"]
 pyttsx3 = ["pyttsx3"]
 # coqui = ["torch", "TTS"]
 coqui = [] # Removed TTS as deps for now
@@ -88,6 +89,7 @@ all = [
     "openai-whisper",
     "stable-ts",
     "elevenlabs",
+    "replicate",
 ]
 
 [tool.poetry.group.dev.dependencies]
