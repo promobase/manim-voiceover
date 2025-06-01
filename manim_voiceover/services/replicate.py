@@ -12,6 +12,7 @@ from manim_voiceover.services.base import SpeechService
 
 try:
     import replicate
+    from replicate.helpers import FileOutput
 except ImportError:
     logger.error(
         "Missing packages. Run `pip install replicate` to use ReplicateService."
@@ -124,7 +125,7 @@ class ReplicateService(SpeechService):
                 "REPLICATE_API_TOKEN environment variable is not set. "
             )
 
-        output_obj = replicate.run(
+        output_obj: FileOutput = replicate.run(
             self.model,
             input={
                 "text": input_text,
@@ -139,26 +140,12 @@ class ReplicateService(SpeechService):
                 "language_boost": language_boost,
                 "english_normalization": english_normalization,
             },
-            # Some replicate clients may require `output_as_dict=True`
+            use_file_output=True,
         )
 
-        # If output_obj is a dict, extract the audio URL from the "output" field
-        if isinstance(output_obj, dict) and "output" in output_obj:
-            audio_url = output_obj["output"]
-        # If output_obj is a string (URL), use it directly (legacy behavior)
-        elif isinstance(output_obj, str):
-            audio_url = output_obj
-        else:
-            raise RuntimeError(
-                "Unexpected output from replicate.run: {}".format(output_obj)
-            )
-
-        import requests
-
-        response = requests.get(audio_url, stream=True)
         audio_file_path = str(Path(cache_dir) / audio_path)
         with open(audio_file_path, "wb") as f:
-            for chunk in response.iter_content(chunk_size=8192):
+            for chunk in output_obj.__iter__():
                 f.write(chunk)
 
         json_dict = {
